@@ -1,9 +1,16 @@
 <template>
   <div class="datatable">
+    <div class="header">
+      <div class="row" :style="`grid-template-columns: ${gridTemplate};`">
+        <div class="col" v-for="col in cols" :key="col.label">
+          <div>{{ col.label }}</div>
+        </div>
+      </div>
+    </div>
     <recycle-scroller
       class="scroller"
-      :items="computedRows"
-      :item-size="32"
+      :items="rows"
+      :item-size="30"
       key-field="email"
       v-slot="{ item: row }"
       page-mode
@@ -14,6 +21,13 @@
         </div>
       </div>
     </recycle-scroller>
+    <div class="summary">
+      <div class="row" :style="`grid-template-columns: ${gridTemplate};`">
+        <div class="col" v-for="col in cols" :key="col.label">
+          <div>{{ summary[col.key] }}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -34,6 +48,10 @@ export default {
     rows: {
       type: Array,
       required: true
+    },
+    summary: {
+      type: Object,
+      required: false
     }
   },
   data() {
@@ -42,27 +60,22 @@ export default {
     };
   },
   watch: {
-    rows: () => {
+    rows() {
+      this.calculateGridTemplate();
+    },
+    cols() {
       this.calculateGridTemplate();
     }
   },
   created() {
     this.calculateGridTemplate();
   },
-  computed: {
-    computedRows() {
-      const headerRow = this.cols.reduce((headerRow, col) => {
-        headerRow[col.key] = col.label;
-        return headerRow;
-      }, {});
-      return [headerRow, ...this.rows];
-    }
-  },
   methods: {
     calculateGridTemplate() {
-      this.gridTemplate = generateGridTemplate(
-        calculateMinWidths(this.cols, this.computedRows)
-      );
+      const minWidths = calculateMinWidths(this.cols, this.rows, this.summary);
+      const maxWidths = this.cols.map(col => col.maxWidth);
+
+      this.gridTemplate = generateGridTemplate(minWidths, maxWidths);
     }
   }
 };
@@ -71,15 +84,43 @@ export default {
 .vue-recycle-scroller__item-wrapper {
   overflow: initial !important;
 }
+.datatable {
+  position: relative;
+}
+.header,
+.summary {
+  position: sticky;
+  z-index: 1;
+  right: 0;
+  left: 0;
+  background: #fff;
+}
+.header {
+  top: 0;
+}
+.header .col,
+.summary .col {
+  font-weight: bold;
+}
+.summary {
+  bottom: 0;
+}
+.summary .row {
+  border-bottom: 0;
+  border-top: 1px solid #ddd;
+}
 .row {
-  height: 32px;
+  height: 30px;
   display: grid;
   min-height: 0;
+  border-bottom: 1px solid #ddd;
 }
+
 .col {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  padding: 5px;
+  min-width: 0;
+  padding: 5px 2ch;
 }
 </style>
