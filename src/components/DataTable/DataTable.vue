@@ -31,8 +31,8 @@
   </div>
 </template>
 <script>
-import { RecycleScroller } from "vue-virtual-scroller";
-import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
+import { RecycleScroller } from "@akryuminfinitum/vue-virtual-scroller";
+import "@akryuminfinitum/vue-virtual-scroller/dist/vue-virtual-scroller.css";
 
 import { calculateMinWidths, generateGridTemplate } from "./utils";
 
